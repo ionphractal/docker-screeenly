@@ -1,0 +1,5 @@
+/screeenly/
+.git/
+docker-compose.yml
+*.bak
+*.swp

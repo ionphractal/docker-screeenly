@@ -1,0 +1,44 @@
+version: '2'
+services:
+  db:
+    restart: unless-stopped
+    image: mariadb:10.3
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw_changeme
+      MYSQL_DATABASE: screeenly
+      MYSQL_USER: screeenly
+      MYSQL_PASSWORD: db_pw_changeme
+#    volumes:
+#      - /storage/docker/volumes/screeenly/db:/var/lib/mysql
+
+  screeenly:
+    restart: unless-stopped
+    build: .
+    hostname: screeenly
+    depends_on:
+      - redis
+      - db
+    links:
+      - redis:redis.local
+      - db:db.local
+    environment:
+      APP_ENV: production
+      APP_URL: https://screenly.domain.tld
+      APP_KEY: app_key_changeme
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: db.local
+      DB_PORT: 3306
+      DB_DATABASE: screeenly
+      DB_USERNAME: screeenly
+      DB_PASSWORD: db_pw_changeme
+      REDIS_HOST: redis.local
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
+    ports:
+      - "8000:8000"
+
+  redis:
+    restart: unless-stopped
+    image: redis
+
