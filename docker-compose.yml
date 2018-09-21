@@ -1,20 +1,19 @@
-version: '2'
+version: '3'
 services:
   db:
     restart: unless-stopped
     image: mariadb:10.3
     environment:
-      MYSQL_ROOT_PASSWORD: rootpw_changeme
+      MYSQL_ROOT_PASSWORD: root_pw_changeme
       MYSQL_DATABASE: screeenly
       MYSQL_USER: screeenly
       MYSQL_PASSWORD: db_pw_changeme
 #    volumes:
 #      - /storage/docker/volumes/screeenly/db:/var/lib/mysql
 
-  screeenly:
+  api:
     restart: unless-stopped
-    build: .
-    hostname: screeenly
+    image: ionphractal/screeenly:0.1.0
     depends_on:
       - redis
       - db
@@ -22,8 +21,9 @@ services:
       - redis:redis.local
       - db:db.local
     environment:
+      SCREEENLY_DISABLE_SANDBOX: "true"
       APP_ENV: production
-      APP_URL: https://screenly.domain.tld
+      APP_URL: https://screeenly.domain.tld
       APP_KEY: app_key_changeme
       APP_DEBUG: "false"
       DB_CONNECTION: mysql
@@ -33,12 +33,30 @@ services:
       DB_USERNAME: screeenly
       DB_PASSWORD: db_pw_changeme
       REDIS_HOST: redis.local
-      REDIS_PASSWORD: null
+      REDIS_PASSWORD: ""
       REDIS_PORT: 6379
+    volumes:
+      - webroot:/var/www/html
     ports:
-      - "8000:8000"
+      - "172.17.0.1::9000"
+
+  nginx:
+    restart: unless-stopped
+    image: ionphractal/nginx-fpm-proxy:0.1.0
+    links:
+      - api:api.local
+    environment:
+      FPM_BACKEND: api.local
+      FPM_PORT: 9000
+      WEBROOT: /var/www/public
+    ports:
+      - "172.17.0.1::8080"
+    volumes:
+      - webroot:/var/www:ro
 
   redis:
     restart: unless-stopped
     image: redis
 
+volumes:
+  webroot:
