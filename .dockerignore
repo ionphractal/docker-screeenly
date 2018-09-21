@@ -1,5 +1,9 @@
 /screeenly/
+/php/
+/php-fpm.d/
 .git/
-docker-compose.yml
 *.bak
 *.swp
+LICENSE
+README.md
+docker-compose.yml

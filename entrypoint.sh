@@ -1,9 +1,12 @@
 #!/bin/bash
 
-envsub .env.template .env
-php artisan key:generate --force
-php artisan migrate --force
-#yarn hot
+envsub env.template .env
+if [ -z "${APP_KEY:-}" ]; then
+  echo "WARNING: APP_KEY not set. Using random generated key."
+  php artisan key:generate --force
+fi
 
-apache2-foreground
-#php artisan serve -vvv --host=0.0.0.0 --port=8000
+# TODO: should wait for DB to come up
+php artisan migrate --force
+
+php-fpm -F
